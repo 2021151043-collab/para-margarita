@@ -161,7 +161,6 @@
   <audio id="bg-music" loop src="musica.mp3" preload="auto"></audio>
 
   <script>
-    // --- 1. CONFIGURACIÓN THREE.JS ---
     const canvas = document.getElementById('bg-canvas');
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x020108, 0.0005);
@@ -179,7 +178,6 @@
     controls.dampingFactor = 0.05;
     controls.enabled = false;
 
-    // --- TEXTURA DE ESTRELLAS NÍTIDAS ---
     function createSharpStarTexture() {
       const c = document.createElement('canvas');
       c.width = 64; c.height = 64;
@@ -193,7 +191,6 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 64, 64);
 
-      // Destello central
       ctx.strokeStyle = 'rgba(255,255,255,0.85)';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -205,18 +202,17 @@
     }
     const starTex = createSharpStarTexture();
 
-    // --- ESTRELLAS LEJANAS (10,000 ESTRELLAS NÍTIDAS Y BRILLANTES) ---
     const farStarsCount = 10000;
     const farStarsGeo = new THREE.BufferGeometry();
     const farStarsPos = new Float32Array(farStarsCount * 3);
     const farStarsColors = new Float32Array(farStarsCount * 3);
 
     const starColorsList = [
-      new THREE.Color(0xffffff), // Blanco impoluto
-      new THREE.Color(0xffd1dc), // Rosa bebé
-      new THREE.Color(0xadd8e6), // Azul estelar
-      new THREE.Color(0xffdfa9), // Dorado estelar
-      new THREE.Color(0xe6e6fa)  // Lavanda
+      new THREE.Color(0xffffff),
+      new THREE.Color(0xffd1dc),
+      new THREE.Color(0xadd8e6),
+      new THREE.Color(0xffdfa9),
+      new THREE.Color(0xe6e6fa)
     ];
 
     for(let i = 0; i < farStarsCount; i++) {
@@ -239,24 +235,22 @@
     farStarsGeo.setAttribute('color', new THREE.BufferAttribute(farStarsColors, 3));
 
     const farStarsMat = new THREE.PointsMaterial({
-      size: 3.2,                 // Tamaño más grande y nítido
-      sizeAttenuation: false,   // Mantienen nitidez independientemente de la distancia
+      size: 3.2,
+      sizeAttenuation: false,
       map: starTex,
       transparent: true,
       opacity: 1.0,
       vertexColors: true,
       blending: THREE.AdditiveBlending,
-      fog: false                // La niebla no las oscurece
+      fog: false
     });
     const farStarsMesh = new THREE.Points(farStarsGeo, farStarsMat);
     scene.add(farStarsMesh);
 
-    // --- GRUPO DEL UNIVERSO (GALAXIA, CORAZÓN, FOTOS Y FRASES) ---
     const universeGroup = new THREE.Group();
     scene.add(universeGroup);
     universeGroup.scale.set(0.0001, 0.0001, 0.0001);
 
-    // --- EFECTO HIPERESPACIO / VELOCIDAD DE LA LUZ ---
     const warpCount = 1200;
     const warpGeo = new THREE.BufferGeometry();
     const warpPos = new Float32Array(warpCount * 6);
@@ -275,7 +269,6 @@
     scene.add(warpLines);
     warpLines.visible = false;
 
-    // --- 2. GALAXIA DE PARTÍCULAS ---
     const galaxyCount = 35000;
     const galaxyGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(galaxyCount * 3);
@@ -321,7 +314,6 @@
     const galaxyMesh = new THREE.Points(galaxyGeo, galaxyMat);
     universeGroup.add(galaxyMesh);
 
-    // --- 3. AGUJERO NEGRO CENTRAL ---
     const holeGeo = new THREE.SphereGeometry(2.6, 32, 32);
     const blackHole = new THREE.Mesh(holeGeo, new THREE.MeshBasicMaterial({ color: 0x000000 }));
     universeGroup.add(blackHole);
@@ -332,7 +324,6 @@
     ringMesh.rotation.x = Math.PI / 2;
     universeGroup.add(ringMesh);
 
-    // --- 4. CORAZÓN EN 3D ---
     const heartCount = 4500;
     const heartGeo = new THREE.BufferGeometry();
     const heartPos = new Float32Array(heartCount * 3);
@@ -369,7 +360,6 @@
     const heartMesh = new THREE.Points(heartGeo, heartMat);
     universeGroup.add(heartMesh);
 
-    // --- 5. FRASES Y FOTOS EN ÓRBITA ---
     const orbitingObjects = [];
 
     function createTextSprite(text) {
@@ -445,14 +435,12 @@
       });
     });
 
-    // --- 6. ACERCAMIENTO INTERACTIVO (RAYCASTER AL TOCAR FOTOS O FRASES) ---
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let focusObject = null;
     const focusHint = document.getElementById('focus-hint');
 
     window.addEventListener('pointerdown', (e) => {
-      // Ignorar clics en botones de la pantalla
       if (e.target.closest('#start-overlay') || e.target.closest('#music-btn')) return;
 
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -471,13 +459,11 @@
         focusObject = hit;
         focusHint.classList.add('visible');
       } else {
-        // Clic en el espacio vacío -> regresa la cámara
         focusObject = null;
         focusHint.classList.remove('visible');
       }
     });
 
-    // --- 7. ANIMACIÓN Y TITILEO ---
     let isTraveling = false;
     let travelProgress = 0;
     const flashScreen = document.getElementById('flash-screen');
@@ -485,7 +471,6 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Rotación y parpadeo de estrellas
       farStarsMesh.rotation.y += 0.0004;
       farStarsMesh.rotation.x += 0.0002;
       farStarsMat.opacity = 0.8 + Math.sin(Date.now() * 0.003) * 0.2;
@@ -556,7 +541,6 @@
         }
       });
 
-      // MANEJO DE ACERCAMIENTO SUAVE
       if (focusObject && !isTraveling) {
         const worldPos = new THREE.Vector3();
         focusObject.getWorldPosition(worldPos);
@@ -575,7 +559,6 @@
     }
     animate();
 
-    // --- 8. EVENTOS DE AUDIO Y NAVEGACIÓN ---
     const startOverlay = document.getElementById('start-overlay');
     const startBtn = document.getElementById('start-btn');
     const musicBtn = document.getElementById('music-btn');
@@ -584,7 +567,6 @@
     startBtn.addEventListener('click', () => {
       startOverlay.classList.add('hidden');
       
-      // La música empieza exactamente al tocar INICIAR VIAJE
       bgMusic.currentTime = 0;
       bgMusic.play().then(() => {
         musicBtn.textContent = '🎵';
